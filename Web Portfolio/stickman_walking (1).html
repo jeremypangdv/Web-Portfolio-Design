@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑暗中行走</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            background: #000000;
+        }
+
+        #gifContainer {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+
+        #gifContainer img {
+            width: 150px;
+            height: auto;
+            display: block;
+        }
+
+        .debug {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="gifContainer">
+        <img src="test.gif" alt="walking animation" onload="console.log('GIF loaded!')" onerror="console.log('GIF failed to load')">
+    </div>
+    <div class="debug" id="debug">檢查中...</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gifContainer = document.getElementById('gifContainer');
+        const debug = document.getElementById('debug');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 檢查GIF是否載入
+        const gifImg = gifContainer.querySelector('img');
+        gifImg.onload = function() {
+            debug.textContent = 'GIF載入成功！尺寸: ' + this.naturalWidth + 'x' + this.naturalHeight;
+        };
+        gifImg.onerror = function() {
+            debug.textContent = 'GIF載入失敗！';
+            debug.style.color = 'red';
+        };
+
+        let sphereVisible = true;
+        let ropeEndY = 0;
+        let ropeDropping = false;
+        const ropeWidth = 4;
+        let ropeX = canvas.width / 2 + 60;
+        let scrollOffset = 0;
+        let isScrolling = false;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ropeX = canvas.width / 2 + 60;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            // 點擊球體
+            if (sphereVisible) {
+                const sphereX = canvas.width - 80;
+                const sphereY = 80;
+                const sphereRadius = 30;
+
+                const dx = e.clientX - sphereX;
+                const dy = e.clientY - sphereY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= sphereRadius) {
+                    sphereVisible = false;
+                    ropeDropping = true;
+                    return;
+                }
+            }
+
+            // 點擊繩子
+            if (ropeDropping && !isScrolling) {
+                const clickX = e.clientX;
+                const clickY = e.clientY;
+
+                if (clickX >= ropeX - 10 && clickX <= ropeX + 10 && 
+                    clickY >= 0 && clickY <= ropeEndY) {
+                    isScrolling = true;
+                }
+            }
+        });
+
+        function drawSphere() {
+            if (!sphereVisible) return;
+
+            const x = canvas.width - 80;
+            const y = 80;
+            const radius = 30;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+
+        function drawRope() {
+            if (!ropeDropping) return;
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(ropeX - ropeWidth / 2, 0, ropeWidth, ropeEndY);
+
+            if (ropeEndY < canvas.height / 2 - 50) {
+                ropeEndY += 5;
+            }
+        }
+
+        function animate() {
+            // 如果正在滾動，增加偏移量
+            if (isScrolling && scrollOffset < canvas.height) {
+                scrollOffset += 8;
+                gifContainer.style.transform = `translate(-50%, -50%) translateY(${scrollOffset}px)`;
+            }
+
+            // 繪製黑色背景
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 如果滾動完成，顯示白色背景並隱藏GIF
+            if (scrollOffset >= canvas.height) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                gifContainer.style.display = 'none';
+                
+                // 顯示文字
+                ctx.fillStyle = '#000000';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Pang Jun Ming Portfolio', canvas.width / 2, canvas.height / 2);
+            } else {
+                // 滾動中，繪製內容並偏移
+                ctx.save();
+                ctx.translate(0, scrollOffset);
+
+                drawSphere();
+                drawRope();
+
+                ctx.restore();
+
+                // 繪製上方的白色區域
+                if (scrollOffset > 0) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, scrollOffset);
+                    
+                    // 在白色區域中顯示文字
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Pang Jun Ming Portfolio', canvas.width / 2, canvas.height / 2 - canvas.height + scrollOffset);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
