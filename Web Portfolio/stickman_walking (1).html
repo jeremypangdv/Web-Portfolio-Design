@@ -32,19 +32,9 @@
         }
 
         #gifContainer img {
-            width: 150px;
+            width: 1000px;
             height: auto;
             display: block;
-        }
-
-        .debug {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -53,26 +43,14 @@
     <div id="gifContainer">
         <img src="test.gif" alt="walking animation" onload="console.log('GIF loaded!')" onerror="console.log('GIF failed to load')">
     </div>
-    <div class="debug" id="debug">檢查中...</div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const gifContainer = document.getElementById('gifContainer');
-        const debug = document.getElementById('debug');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        // 檢查GIF是否載入
-        const gifImg = gifContainer.querySelector('img');
-        gifImg.onload = function() {
-            debug.textContent = 'GIF載入成功！尺寸: ' + this.naturalWidth + 'x' + this.naturalHeight;
-        };
-        gifImg.onerror = function() {
-            debug.textContent = 'GIF載入失敗！';
-            debug.style.color = 'red';
-        };
 
         let sphereVisible = true;
         let ropeEndY = 0;
