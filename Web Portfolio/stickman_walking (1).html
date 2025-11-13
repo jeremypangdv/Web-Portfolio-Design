@@ -58,6 +58,37 @@
         let ropeX = canvas.width / 2 + 60;
         let scrollOffset = 0;
         let isScrolling = false;
+        let portfolioReached = false; // 標記是否已到達 portfolio 頁面
+
+        // Pacman 動畫相關
+        const pacmanImages = [];
+        let pacmanLoaded = false;
+        let pacmanX = -100;
+        const pacmanSpeed = 3;
+
+        // 載入 Pacman 圖片
+        for (let i = 1; i <= 3; i++) {
+            const img = new Image();
+            img.src = `pacman/${i}.png`;
+            img.onload = () => {
+                if (i === 3) pacmanLoaded = true;
+            };
+            pacmanImages.push(img);
+        }
+
+        // Blinky 幽靈相關
+        const blinkyImage = new Image();
+        blinkyImage.src = 'pacman/blinky.png';
+        let blinkyLoaded = false;
+        blinkyImage.onload = () => {
+            blinkyLoaded = true;
+        };
+
+        // 獲取當前繩子的抖動偏移
+        function getRopeShake() {
+            const time = Date.now() / 1000;
+            return Math.sin(time * 3) * 2; // 左右抖動 2px
+        }
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
@@ -88,9 +119,21 @@
                 const clickX = e.clientX;
                 const clickY = e.clientY;
 
-                if (clickX >= ropeX - 10 && clickX <= ropeX + 10 && 
+                if (clickX >= ropeX - 10 && clickX <= ropeX + 10 &&
                     clickY >= 0 && clickY <= ropeEndY) {
                     isScrolling = true;
+                }
+            }
+
+            // 點擊 email（在 portfolio 頁面）
+            if (scrollOffset >= canvas.height) {
+                const emailY = canvas.height / 3 + 110;
+                const emailX = canvas.width / 2;
+
+                // 檢測點擊區域（email 文字範圍）
+                if (Math.abs(e.clientX - emailX) < 150 &&
+                    Math.abs(e.clientY - emailY) < 15) {
+                    window.location.href = 'mailto:junmingpang@outlook.com';
                 }
             }
         });
@@ -102,21 +145,291 @@
             const y = 80;
             const radius = 30;
 
+            // 繪製球體
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
+
+            // 繪製點擊提示符號（波紋擴散效果）
+            const time = Date.now() / 1000;
+
+            // 繪製在球體正中間
+            const iconX = x;
+            const iconY = y;
+
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // 繪製多個波紋，每個波紋間隔一段時間
+            for (let i = 0; i < 3; i++) {
+                // 每個波紋延遲 1.2 秒，總週期 3.6 秒
+                const waveTime = (time * 0.4 + i * 1.2) % 3.6; // 0-3.6 秒循環
+                const progress = waveTime / 3.6; // 0-1 的進度
+
+                // 波紋從小到大擴散
+                const waveRadius = 5 + progress * 45; // 從 5px 擴散到 50px
+
+                // 大部分時間保持清晰，接近消失時慢慢變透明
+                let waveOpacity;
+                if (progress < 0.7) {
+                    waveOpacity = 1; // 前 70% 保持完全不透明
+                } else {
+                    waveOpacity = 1 - (progress - 0.7) / 0.3; // 後 30% 慢慢淡出到 0
+                }
+
+                if (waveOpacity > 0.01) {
+                    ctx.globalAlpha = waveOpacity;
+                    ctx.beginPath();
+                    ctx.arc(iconX, iconY, waveRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
         }
 
         function drawRope() {
             if (!ropeDropping) return;
 
+            // 只有在未點擊時才有抖動效果，點擊後停止抖動
+            const shake = isScrolling ? 0 : getRopeShake();
+
             ctx.fillStyle = 'white';
-            ctx.fillRect(ropeX - ropeWidth / 2, 0, ropeWidth, ropeEndY);
+            ctx.fillRect(ropeX - ropeWidth / 2 + shake, 0, ropeWidth, ropeEndY);
 
             if (ropeEndY < canvas.height / 2 - 50) {
                 ropeEndY += 5;
             }
+        }
+
+        function drawSciFiPortfolio() {
+            // 黑色背景
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 科幻網格背景效果
+            const time = Date.now() / 1000;
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.1;
+
+            // 垂直線
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // 水平線
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.globalAlpha = 1;
+
+            // 主標題 - 科幻字體效果
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 發光效果
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#00ff00';
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 72px Arial';
+            ctx.fillText('PANG JUN MING', canvas.width / 2, canvas.height / 3);
+
+            ctx.shadowBlur = 15;
+            ctx.font = 'bold 36px Arial';
+            ctx.fillText('PORTFOLIO', canvas.width / 2, canvas.height / 3 + 60);
+
+            // Email 文字（可點擊）
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '20px Arial';
+            const emailText = 'junmingpang@outlook.com';
+            const emailY = canvas.height / 3 + 110;
+            ctx.fillText(emailText, canvas.width / 2, emailY);
+
+            // 添加下劃線表示可點擊
+            const textWidth = ctx.measureText(emailText).width;
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - textWidth / 2, emailY + 5);
+            ctx.lineTo(canvas.width / 2 + textWidth / 2, emailY + 5);
+            ctx.stroke();
+
+            ctx.restore();
+
+            // 繪製動態掃描線
+            const scanY = (time * 100) % canvas.height;
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.moveTo(0, scanY);
+            ctx.lineTo(canvas.width, scanY);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // 左下角系統信息
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('> SYSTEM: ACTIVE', 20, canvas.height - 80);
+            ctx.fillText('> STATUS: READY', 20, canvas.height - 60);
+            ctx.fillText('> PROJECTS: LOADING...', 20, canvas.height - 40);
+
+            // 右下角閃爍光標
+            const blink = Math.floor(time * 2) % 2;
+            if (blink) {
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(canvas.width - 30, canvas.height - 30, 15, 20);
+            }
+
+            // 繪製 Blinky 幽靈（在 Pacman 前面）
+            if (blinkyLoaded) {
+                // Blinky 位置在 Pacman 前面約 150px
+                const blinkyX = pacmanX + 150;
+                const blinkyBaseY = canvas.height / 3 + 200;
+
+                // 上下漂浮效果（使用正弦波）
+                const floatOffset = Math.sin(time * 3) * 8; // 上下漂浮 8px
+                const blinkyY = blinkyBaseY + floatOffset;
+
+                // 繪製 Blinky（大小約 50px）
+                const blinkySize = 50;
+                ctx.drawImage(blinkyImage, blinkyX, blinkyY - blinkySize / 2, blinkySize, blinkySize);
+            }
+
+            // 繪製 Pacman 動畫
+            if (pacmanLoaded) {
+                // Pacman Y 位置在 email 下方
+                const pacmanY = canvas.height / 3 + 200;
+
+                // 選擇動畫幀（循環播放 1.png -> 2.png -> 3.png）
+                const frameIndex = Math.floor(time * 10) % 3;
+                const currentFrame = pacmanImages[frameIndex];
+
+                // 繪製 Pacman（大小約 50px）
+                const pacmanSize = 50;
+                ctx.drawImage(currentFrame, pacmanX, pacmanY - pacmanSize / 2, pacmanSize, pacmanSize);
+            }
+
+            // 繪製機器人
+            const robotX = canvas.width / 2;
+            const robotY = canvas.height / 3 + 300;
+
+            // 根據 Pacman 位置決定顯示狀態
+            // Pacman 進入畫面 (0 到畫面寬度) 時顯示，離開後關閉
+            let isDisplayOn = false;
+            let displayProgress = 0;
+
+            if (pacmanX >= 0 && pacmanX <= canvas.width) {
+                // Pacman 在畫面中
+                isDisplayOn = true;
+                // 計算顯示進度 (0-1)，用於淡入淡出
+                if (pacmanX < 100) {
+                    displayProgress = pacmanX / 100; // 淡入
+                } else if (pacmanX > canvas.width - 100) {
+                    displayProgress = (canvas.width - pacmanX) / 100; // 淡出
+                } else {
+                    displayProgress = 1; // 完全顯示
+                }
+            }
+
+            ctx.save();
+            ctx.strokeStyle = '#00ff00';
+            ctx.fillStyle = '#00ff00';
+            ctx.lineWidth = 3;
+
+            // 機器人身體
+            ctx.strokeRect(robotX - 30, robotY, 60, 80);
+
+            // 機器人手臂（會揮手）
+            const waveOffset = isDisplayOn ? Math.sin(time * 5) * 10 : 0;
+
+            // 左手臂
+            ctx.beginPath();
+            ctx.moveTo(robotX - 30, robotY + 20);
+            ctx.lineTo(robotX - 50, robotY + 40);
+            ctx.stroke();
+
+            // 右手臂（揮手）
+            ctx.beginPath();
+            ctx.moveTo(robotX + 30, robotY + 20);
+            ctx.lineTo(robotX + 50, robotY + 30 + waveOffset);
+            ctx.stroke();
+
+            // 機器人腿
+            ctx.beginPath();
+            ctx.moveTo(robotX - 15, robotY + 80);
+            ctx.lineTo(robotX - 15, robotY + 110);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(robotX + 15, robotY + 80);
+            ctx.lineTo(robotX + 15, robotY + 110);
+            ctx.stroke();
+
+            // 機器人頭部（螢幕）
+            const headY = robotY - 50;
+            ctx.strokeRect(robotX - 35, headY, 70, 40);
+
+            // 螢幕背景（根據顯示進度調整亮度）
+            if (isDisplayOn) {
+                const brightness = Math.floor(17 * displayProgress); // 0-17
+                ctx.fillStyle = `#00${brightness.toString(16).padStart(2, '0')}00`;
+                ctx.fillRect(robotX - 33, headY + 2, 66, 36);
+            } else {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(robotX - 33, headY + 2, 66, 36);
+            }
+
+            // 顯示 "HELLO WORLD" 文字（根據顯示進度淡入淡出）
+            if (isDisplayOn && displayProgress > 0.3) {
+                const textOpacity = Math.min(1, (displayProgress - 0.3) / 0.3);
+                ctx.globalAlpha = textOpacity;
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                ctx.fillText('HELLO', robotX, headY + 15);
+                ctx.fillText('WORLD', robotX, headY + 27);
+                ctx.globalAlpha = 1;
+            }
+
+            // 天線
+            ctx.beginPath();
+            ctx.moveTo(robotX, headY);
+            ctx.lineTo(robotX, headY - 10);
+            ctx.stroke();
+
+            // 天線球
+            ctx.beginPath();
+            ctx.arc(robotX, headY - 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // 中央互動提示（在機器人腳下方）
+            const pulseAlpha = Math.sin(time * 2) * 0.3 + 0.5;
+            ctx.globalAlpha = pulseAlpha;
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('▼ SCROLL TO EXPLORE ▼', canvas.width / 2, robotY + 140);
+            ctx.globalAlpha = 1;
         }
 
         function animate() {
@@ -126,22 +439,28 @@
                 gifContainer.style.transform = `translate(-50%, -50%) translateY(${scrollOffset}px)`;
             }
 
+            // 檢查是否到達 portfolio 頁面
+            if (scrollOffset >= canvas.height && !portfolioReached) {
+                portfolioReached = true;
+                gifContainer.style.display = 'none';
+            }
+
+            // 更新 Pacman 位置（只在 portfolio 頁面時移動）
+            if (portfolioReached) {
+                pacmanX += pacmanSpeed;
+                // 如果 Pacman 移出右側，重置到左側
+                if (pacmanX > canvas.width + 100) {
+                    pacmanX = -100;
+                }
+            }
+
             // 繪製黑色背景
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 如果滾動完成，顯示白色背景並隱藏GIF
-            if (scrollOffset >= canvas.height) {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                gifContainer.style.display = 'none';
-                
-                // 顯示文字
-                ctx.fillStyle = '#000000';
-                ctx.font = '48px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Pang Jun Ming Portfolio', canvas.width / 2, canvas.height / 2);
+            // 如果已到達 portfolio，只顯示科幻風格 portfolio
+            if (portfolioReached) {
+                drawSciFiPortfolio();
             } else {
                 // 滾動中，繪製內容並偏移
                 ctx.save();
@@ -152,17 +471,14 @@
 
                 ctx.restore();
 
-                // 繪製上方的白色區域
+                // 繪製上方的科幻風格區域
                 if (scrollOffset > 0) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, scrollOffset);
-                    
-                    // 在白色區域中顯示文字
-                    ctx.fillStyle = '#000000';
-                    ctx.font = '48px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('Pang Jun Ming Portfolio', canvas.width / 2, canvas.height / 2 - canvas.height + scrollOffset);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(0, 0, canvas.width, scrollOffset);
+                    ctx.clip();
+                    drawSciFiPortfolio();
+                    ctx.restore();
                 }
             }
 
