@@ -58,6 +58,11 @@
         let ropeX = canvas.width / 2 + 60;
         let scrollOffset = 0;
         let isScrolling = false;
+        let assistantScrollOffset = 0;
+        let assistantScrolling = false;
+        let assistantScrollDirection = 0;
+        let assistantPageReached = false;
+        let assistantPageEnteredAt = null;
         let portfolioReached = false; // 標記是否已到達 portfolio 頁面
 
         // Pacman 動畫相關
@@ -65,6 +70,13 @@
         let pacmanLoaded = false;
         let pacmanX = -100;
         const pacmanSpeed = 3;
+
+        const assistantImage = new Image();
+        let assistantLoaded = false;
+        assistantImage.onload = () => {
+            assistantLoaded = true;
+        };
+        assistantImage.src = '../Halfbody Female by Sutemo.png';
 
         // 載入 Pacman 圖片
         for (let i = 1; i <= 3; i++) {
@@ -94,7 +106,31 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             ropeX = canvas.width / 2 + 60;
+
+            if (portfolioReached) {
+                scrollOffset = canvas.height;
+            }
+
+            if (assistantPageReached) {
+                assistantScrollOffset = canvas.height;
+            } else {
+                assistantScrollOffset = Math.min(assistantScrollOffset, canvas.height);
+            }
         });
+
+        window.addEventListener('wheel', (e) => {
+            if (!portfolioReached || isScrolling || assistantScrolling) return;
+
+            if (e.deltaY > 0 && !assistantPageReached) {
+                assistantScrolling = true;
+                assistantScrollDirection = 1;
+                e.preventDefault();
+            } else if (e.deltaY < 0 && assistantScrollOffset > 0) {
+                assistantScrolling = true;
+                assistantScrollDirection = -1;
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         canvas.addEventListener('click', (e) => {
             // 點擊球體
@@ -126,7 +162,7 @@
             }
 
             // 點擊 email（在 portfolio 頁面）
-            if (scrollOffset >= canvas.height) {
+            if (scrollOffset >= canvas.height && assistantScrollOffset === 0 && !assistantScrolling) {
                 const emailY = canvas.height / 3 + 110;
                 const emailX = canvas.width / 2;
 
@@ -137,6 +173,47 @@
                 }
             }
         });
+
+        function drawRoundedRect(x, y, width, height, radius) {
+            const r = Math.min(radius, width / 2, height / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + width - r, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+            ctx.lineTo(x + width, y + height - r);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+            ctx.lineTo(x + r, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function wrapText(text, x, y, maxWidth, lineHeight, maxLines) {
+            let line = '';
+            let lineCount = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                const testLine = line + text[i];
+
+                if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
+                    ctx.fillText(line, x, y);
+                    line = text[i];
+                    y += lineHeight;
+                    lineCount++;
+
+                    if (lineCount >= maxLines - 1) {
+                        break;
+                    }
+                } else {
+                    line = testLine;
+                }
+            }
+
+            if (lineCount < maxLines && line.length > 0) {
+                ctx.fillText(line, x, y);
+            }
+        }
 
         function drawSphere() {
             if (!sphereVisible) return;
@@ -432,21 +509,193 @@
             ctx.globalAlpha = 1;
         }
 
+        function drawAssistantScene() {
+            const time = Date.now() / 1000;
+            const isSmall = canvas.width < 700;
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.09;
+
+            const gridSize = isSmall ? 36 : 50;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            const scanX = (time * 90) % canvas.width;
+            ctx.save();
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.22;
+            ctx.beginPath();
+            ctx.moveTo(scanX, 0);
+            ctx.lineTo(scanX, canvas.height);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.fillStyle = '#00ff00';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ff00';
+            ctx.font = isSmall ? '12px monospace' : '14px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('> GUIDE: ONLINE', 20, 32);
+            ctx.fillText('> CHANNEL: PORTFOLIO_LINK', 20, 54);
+            ctx.restore();
+
+            const chatMargin = isSmall ? 18 : 48;
+            const chatWidth = Math.min(canvas.width - chatMargin * 2, isSmall ? canvas.width - chatMargin * 2 : 920);
+            const chatHeight = Math.max(isSmall ? 138 : 142, Math.min(isSmall ? 166 : 180, canvas.height * (isSmall ? 0.22 : 0.2)));
+            const chatX = (canvas.width - chatWidth) / 2;
+            const chatY = canvas.height - chatHeight - chatMargin;
+            const imageTop = isSmall ? 24 : 38;
+            const availableImageHeight = Math.max(180, chatY - imageTop - 18);
+            const imageAspect = assistantLoaded && assistantImage.height ? assistantImage.width / assistantImage.height : 0.853;
+            let imageHeight = availableImageHeight;
+            let imageWidth = imageHeight * imageAspect;
+            const maxImageWidth = canvas.width * (isSmall ? 0.88 : 0.46);
+
+            if (imageWidth > maxImageWidth) {
+                imageWidth = maxImageWidth;
+                imageHeight = imageWidth / imageAspect;
+            }
+
+            const imageX = isSmall
+                ? (canvas.width - imageWidth) / 2
+                : Math.min(canvas.width * 0.66 - imageWidth / 2, canvas.width - imageWidth - 70);
+            const imageY = imageTop + Math.sin(time * 1.5) * 4;
+
+            ctx.save();
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.35;
+            ctx.beginPath();
+            ctx.moveTo(imageX - 20, imageTop + availableImageHeight + 8);
+            ctx.lineTo(imageX + imageWidth + 20, imageTop + availableImageHeight + 8);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.shadowBlur = 22;
+            ctx.shadowColor = 'rgba(0, 255, 0, 0.45)';
+            if (assistantLoaded) {
+                ctx.drawImage(assistantImage, imageX, imageY, imageWidth, imageHeight);
+            } else {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.7;
+                ctx.strokeRect(imageX, imageY, imageWidth, imageHeight);
+                ctx.font = '16px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#00ff00';
+                ctx.fillText('LOADING GUIDE...', imageX + imageWidth / 2, imageY + imageHeight / 2);
+            }
+            ctx.restore();
+
+            const transitionReveal = Math.max(0, Math.min(1, (assistantScrollOffset / canvas.height - 0.55) / 0.45));
+            const timeReveal = assistantPageEnteredAt ? Math.min(1, (Date.now() - assistantPageEnteredAt) / 480) : 0;
+            const reveal = Math.max(transitionReveal, timeReveal);
+
+            if (reveal > 0.01) {
+                const ease = 1 - Math.pow(1 - reveal, 3);
+                const bounce = Math.sin(reveal * Math.PI) * 10;
+                const panelY = chatY + (1 - ease) * 46 - bounce;
+
+                ctx.save();
+                ctx.globalAlpha = reveal;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(0, 255, 0, 0.65)';
+                ctx.fillStyle = 'rgba(0, 12, 0, 0.9)';
+                drawRoundedRect(chatX, panelY, chatWidth, chatHeight, 8);
+                ctx.fill();
+
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#00ff00';
+                ctx.font = isSmall ? '12px monospace' : '13px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('AI GUIDE // ONLINE', chatX + 22, panelY + 30);
+
+                ctx.strokeStyle = 'rgba(0, 255, 0, 0.32)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(chatX + 20, panelY + 45);
+                ctx.lineTo(chatX + chatWidth - 20, panelY + 45);
+                ctx.stroke();
+
+                const fullMessage = '\u4f60\u597d\uff0c\u6b61\u8fce\u4f86\u5230 Pang Jun Ming Portfolio\u3002\u6211\u5728\u9019\u88e1\u5e6b\u4f60\u4ecb\u7d39\u4f5c\u54c1\u548c\u5c08\u6848\u3002';
+                const elapsed = assistantPageEnteredAt ? Date.now() - assistantPageEnteredAt : 0;
+                const typedLength = assistantPageEnteredAt ? Math.min(fullMessage.length, Math.floor(elapsed / 38)) : 0;
+                const cursor = Math.floor(time * 2) % 2 ? '_' : '';
+                const visibleMessage = fullMessage.slice(0, typedLength) + (typedLength < fullMessage.length ? cursor : '');
+
+                ctx.fillStyle = '#d8ffd8';
+                ctx.font = isSmall ? '15px "Microsoft JhengHei", "Consolas", monospace' : '18px "Microsoft JhengHei", "Consolas", monospace';
+                wrapText(visibleMessage, chatX + 24, panelY + 76, chatWidth - 48, isSmall ? 24 : 28, 3);
+
+                const lineY = panelY + chatHeight - 18;
+                ctx.globalAlpha = reveal * (0.45 + Math.sin(time * 5) * 0.15);
+                ctx.strokeStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.moveTo(chatX + 24, lineY);
+                ctx.lineTo(chatX + chatWidth - 24, lineY);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
         function animate() {
             // 如果正在滾動，增加偏移量
             if (isScrolling && scrollOffset < canvas.height) {
-                scrollOffset += 8;
+                scrollOffset = Math.min(scrollOffset + 8, canvas.height);
                 gifContainer.style.transform = `translate(-50%, -50%) translateY(${scrollOffset}px)`;
             }
 
             // 檢查是否到達 portfolio 頁面
             if (scrollOffset >= canvas.height && !portfolioReached) {
                 portfolioReached = true;
+                isScrolling = false;
                 gifContainer.style.display = 'none';
             }
 
+            if (assistantScrolling) {
+                assistantScrollOffset += assistantScrollDirection * 16;
+                assistantScrollOffset = Math.max(0, Math.min(canvas.height, assistantScrollOffset));
+
+                if (assistantScrollOffset >= canvas.height) {
+                    assistantScrolling = false;
+                    assistantPageReached = true;
+                    assistantPageEnteredAt = Date.now();
+                } else if (assistantScrollOffset <= 0) {
+                    assistantScrolling = false;
+                    assistantPageReached = false;
+                    assistantPageEnteredAt = null;
+                }
+            }
+
             // 更新 Pacman 位置（只在 portfolio 頁面時移動）
-            if (portfolioReached) {
+            if (portfolioReached && assistantScrollOffset < canvas.height) {
                 pacmanX += pacmanSpeed;
                 // 如果 Pacman 移出右側，重置到左側
                 if (pacmanX > canvas.width + 100) {
@@ -460,7 +709,19 @@
 
             // 如果已到達 portfolio，只顯示科幻風格 portfolio
             if (portfolioReached) {
-                drawSciFiPortfolio();
+                if (assistantScrollOffset > 0) {
+                    ctx.save();
+                    ctx.translate(0, -assistantScrollOffset);
+                    drawSciFiPortfolio();
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.translate(0, canvas.height - assistantScrollOffset);
+                    drawAssistantScene();
+                    ctx.restore();
+                } else {
+                    drawSciFiPortfolio();
+                }
             } else {
                 // 滾動中，繪製內容並偏移
                 ctx.save();
