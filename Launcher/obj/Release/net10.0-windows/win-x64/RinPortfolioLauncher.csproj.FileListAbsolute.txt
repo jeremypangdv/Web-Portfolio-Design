@@ -1,0 +1,12 @@
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolioLauncher.GeneratedMSBuildEditorConfig.editorconfig
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolioLauncher.AssemblyInfoInputs.cache
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolioLauncher.AssemblyInfo.cs
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolioLauncher.csproj.CoreCompileInputs.cache
+E:\Web-Portfolio-Design\Launcher\bin\Release\net10.0-windows\win-x64\RinPortfolio.exe
+E:\Web-Portfolio-Design\Launcher\bin\Release\net10.0-windows\win-x64\RinPortfolio.deps.json
+E:\Web-Portfolio-Design\Launcher\bin\Release\net10.0-windows\win-x64\RinPortfolio.runtimeconfig.json
+E:\Web-Portfolio-Design\Launcher\bin\Release\net10.0-windows\win-x64\RinPortfolio.dll
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolio.dll
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\refint\RinPortfolio.dll
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\RinPortfolioLauncher.genruntimeconfig.cache
+E:\Web-Portfolio-Design\Launcher\obj\Release\net10.0-windows\win-x64\ref\RinPortfolio.dll

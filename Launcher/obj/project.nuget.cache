@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "CmI1JGcNQ6Y=",
+  "success": true,
+  "projectFilePath": "E:\\Web-Portfolio-Design\\Launcher\\RinPortfolioLauncher.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Nitro\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.9\\microsoft.net.illink.tasks.10.0.9.nupkg.sha512",
+    "C:\\Users\\Nitro\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\10.0.9\\microsoft.netcore.app.runtime.win-x64.10.0.9.nupkg.sha512",
+    "C:\\Users\\Nitro\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\10.0.9\\microsoft.windowsdesktop.app.runtime.win-x64.10.0.9.nupkg.sha512",
+    "C:\\Users\\Nitro\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\10.0.9\\microsoft.aspnetcore.app.runtime.win-x64.10.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}

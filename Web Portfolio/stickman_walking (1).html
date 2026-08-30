@@ -35,21 +35,433 @@
             height: auto;
             display: block;
         }
+
+        #chatOverlay {
+            position: fixed;
+            left: 50%;
+            bottom: 26px;
+            z-index: 10;
+            width: min(920px, calc(100vw - 36px));
+            height: min(230px, 34vh);
+            min-height: 190px;
+            transform: translate(-50%, 34px);
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            background: rgba(0, 10, 0, 0.92);
+            box-shadow: 0 0 24px rgba(0, 255, 0, 0.42);
+            color: #d8ffd8;
+            font-family: Consolas, "Courier New", monospace;
+            transition: opacity 280ms ease, transform 280ms ease;
+            overscroll-behavior: contain;
+        }
+
+        #chatOverlay.is-visible {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chatHeader {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px 9px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.32);
+            color: #00ff00;
+            font-size: 13px;
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        .chatHeaderActions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        #generationStatus {
+            display: none;
+            color: #00ff00;
+            font-size: 11px;
+            white-space: nowrap;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.78);
+        }
+
+        #generationStatus.is-visible {
+            display: inline-block;
+        }
+
+        #skipButton {
+            display: none;
+            width: 56px;
+            height: 24px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 255, 0, 0.76);
+            border-radius: 4px;
+            background: rgba(0, 30, 0, 0.82);
+            color: #00ff00;
+            font: bold 11px Consolas, "Courier New", monospace;
+            cursor: pointer;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.78);
+        }
+
+        #skipButton.is-visible {
+            display: inline-flex;
+        }
+
+        #skipButton:hover {
+            background: rgba(0, 70, 0, 0.9);
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.42);
+        }
+
+        #skipButton:disabled {
+            cursor: default;
+            opacity: 0.55;
+        }
+
+        #historyButton {
+            position: relative;
+            width: 28px;
+            height: 24px;
+            border: 1px solid rgba(0, 255, 0, 0.7);
+            border-radius: 4px;
+            background: rgba(0, 30, 0, 0.78);
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        #historyButton::before {
+            content: "";
+            position: absolute;
+            left: 7px;
+            top: 6px;
+            width: 12px;
+            height: 2px;
+            background: #00ff00;
+            box-shadow: 0 5px 0 #00ff00, 0 10px 0 #00ff00;
+        }
+
+        #historyButton:hover,
+        #historyButton.is-active {
+            background: rgba(0, 70, 0, 0.86);
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.42);
+        }
+
+        #connectionStatus {
+            display: none;
+            max-width: 48%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        #chatMessages {
+            flex: 1;
+            overflow: hidden;
+            padding: 12px 16px;
+            scrollbar-color: #00ff00 #001900;
+            overscroll-behavior: contain;
+        }
+
+        #historyPanel {
+            position: fixed;
+            inset: 0;
+            display: none;
+            z-index: 30;
+            align-items: center;
+            justify-content: center;
+            padding: 26px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(2px);
+        }
+
+        #historyPanel.is-visible {
+            display: flex;
+        }
+
+        #historyDialog {
+            width: min(820px, calc(100vw - 42px));
+            height: min(620px, calc(100vh - 58px));
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            background: rgba(0, 8, 0, 0.97);
+            box-shadow: 0 0 32px rgba(0, 255, 0, 0.45);
+            color: #d8ffd8;
+            font-family: Consolas, "Courier New", monospace;
+        }
+
+        .historyHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 14px 10px 16px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.34);
+            color: #00ff00;
+            font-size: 13px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        #historyCloseButton {
+            width: 30px;
+            height: 28px;
+            border: 1px solid rgba(0, 255, 0, 0.76);
+            border-radius: 4px;
+            background: rgba(0, 30, 0, 0.82);
+            color: #00ff00;
+            font: bold 14px Consolas, "Courier New", monospace;
+            cursor: pointer;
+        }
+
+        #historyCloseButton:hover {
+            background: rgba(0, 70, 0, 0.9);
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.42);
+        }
+
+        #historyMessages {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 14px 18px;
+            scrollbar-color: #00ff00 #001900;
+            overscroll-behavior: contain;
+        }
+
+        .chatMessage {
+            margin-bottom: 8px;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            font-size: 15px;
+        }
+
+        .chatMessage.rin {
+            color: #d8ffd8;
+        }
+
+        .chatMessage.player {
+            color: #ffffff;
+        }
+
+        .chatSpeaker {
+            color: #00ff00;
+            margin-right: 6px;
+        }
+
+        .chatText {
+            white-space: pre-wrap;
+        }
+
+        .chatContinueMarker {
+            color: #00ff00;
+            margin-left: 8px;
+            animation: continueBlink 900ms ease-in-out infinite;
+        }
+
+        #chatForm {
+            display: flex;
+            gap: 10px;
+            padding: 10px 12px 12px;
+            border-top: 1px solid rgba(0, 255, 0, 0.32);
+        }
+
+        #playerInput {
+            flex: 1;
+            min-width: 0;
+            height: 40px;
+            border: 1px solid rgba(0, 255, 0, 0.72);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.88);
+            color: #ffffff;
+            padding: 0 12px;
+            font: 15px Consolas, "Courier New", monospace;
+            outline: none;
+        }
+
+        #playerInput:focus {
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.45);
+        }
+
+        #sendButton {
+            width: 94px;
+            height: 40px;
+            border: 1px solid #00ff00;
+            border-radius: 6px;
+            background: #002800;
+            color: #00ff00;
+            font: bold 14px Consolas, "Courier New", monospace;
+            cursor: pointer;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+        }
+
+        #sendButton:disabled,
+        #playerInput:disabled {
+            cursor: default;
+            opacity: 0.55;
+        }
+
+        #sendButton.is-denied {
+            animation: sendDeniedShake 260ms ease;
+            border-color: #ff4040;
+            color: #ff6666;
+            background: #280000;
+            box-shadow: 0 0 14px rgba(255, 64, 64, 0.72);
+        }
+
+        @keyframes sendDeniedShake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-6px);
+            }
+
+            40% {
+                transform: translateX(6px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            80% {
+                transform: translateX(4px);
+            }
+        }
+
+        @keyframes continueBlink {
+            0%,
+            100% {
+                opacity: 0.25;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 700px) {
+            #chatOverlay {
+                bottom: 18px;
+                width: calc(100vw - 24px);
+                height: 230px;
+            }
+
+            .chatHeader {
+                font-size: 11px;
+            }
+
+            #generationStatus {
+                font-size: 10px;
+            }
+
+            .chatMessage,
+            #playerInput {
+                font-size: 14px;
+            }
+
+            #sendButton {
+                width: 72px;
+            }
+        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
     <div id="gifContainer">
-        <img src="test.gif" alt="walking animation" onload="console.log('GIF loaded!')" onerror="console.log('GIF failed to load')">
+        <img src="/Web%20Portfolio/test.gif" alt="walking animation" onload="console.log('GIF loaded!')" onerror="console.log('GIF failed to load')">
+    </div>
+    <div id="chatOverlay" aria-hidden="true">
+        <div class="chatHeader">
+            <span>RIN SAIONJI</span>
+            <div class="chatHeaderActions">
+                <span id="generationStatus" aria-live="polite"></span>
+                <button id="skipButton" type="button" aria-label="Skip Rin dialogue">SKIP</button>
+                <button id="historyButton" type="button" aria-label="Chat history"></button>
+            </div>
+            <span id="connectionStatus" aria-hidden="true"></span>
+        </div>
+        <div id="chatMessages"></div>
+        <form id="chatForm">
+            <input id="playerInput" type="text" maxlength="500" autocomplete="off" placeholder="Talk to Rin..." disabled>
+            <button id="sendButton" type="submit" disabled>SEND</button>
+        </form>
+    </div>
+    <div id="historyPanel" aria-hidden="true">
+        <div id="historyDialog" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+            <div class="historyHeader">
+                <span id="historyTitle">CHAT HISTORY</span>
+                <button id="historyCloseButton" type="button" aria-label="Close history">X</button>
+            </div>
+            <div id="historyMessages"></div>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const gifContainer = document.getElementById('gifContainer');
+        const chatOverlay = document.getElementById('chatOverlay');
+        const chatMessagesEl = document.getElementById('chatMessages');
+        const generationStatus = document.getElementById('generationStatus');
+        const skipButton = document.getElementById('skipButton');
+        const historyButton = document.getElementById('historyButton');
+        const historyPanel = document.getElementById('historyPanel');
+        const historyCloseButton = document.getElementById('historyCloseButton');
+        const historyMessagesEl = document.getElementById('historyMessages');
+        const chatForm = document.getElementById('chatForm');
+        const playerInput = document.getElementById('playerInput');
+        const sendButton = document.getElementById('sendButton');
+        const connectionStatus = document.getElementById('connectionStatus');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+
+        const RIN_INITIAL_MESSAGE = "Hmph. You finally arrived. You look like you need help, that's all. Do not misunderstand.";
+        const RIN_DIALOGUE_CHUNK_LIMIT = 145;
+        const PRESENCE_PING_INTERVAL_MS = 10000;
+        const DISALLOWED_CHAT_PATTERNS = [
+            /(?:^|[^\w])(?:18\+|r\s*-?\s*18|18\s*plus|18\s*only|adult|mature)(?=$|[^\w])/i,
+            /\b(?:nsfw|porn|pornographic|erotic|lewd|nude|nudity|naked|sex|sexting|sexy|sexual|sexually|fetish|xxx|strip|undress|seduce|horny)\b/i,
+            /\bexplicit\b.{0,24}\b(?:sexual|scene|content|image|photo|picture)\b/i,
+            /\b(?:sexual|erotic)\b.{0,24}\b(?:scene|content|roleplay|image|photo|picture)\b/i,
+            /\b(?:make\s+love|sleep\s+with)\b/i,
+            /(?:18\u7981|R18|\u8272\u60c5|\u8272\u8272|\u88f8\u804a|\u88f8\u7167|\u88f8\u9ad4|\u88f8\u4f53|\u9ec4\u8272|\u9ec3\u8272|\u9732\u9aa8|\u6210\u4eba\u5411|\u6210\u4eba\u5185\u5bb9|\u6210\u4eba\u5167\u5bb9|\u6027\u611b|\u6027\u7231|\u6027\u6697\u793a|\u6027\u5185\u5bb9|\u6027\u5167\u5bb9|\u6027\u8bdd\u9898|\u6027\u8a71\u984c|\u505a\u611b|\u505a\u7231)/iu,
+            /\b(?:adult content|mature content)\b/i,
+        ];
+        const SAFETY_REFUSAL_PATTERN = /(?:I cannot create content that is explicit or sexual in nature|(?:cannot|can't|unable to).{0,90}(?:explicit|sexual|erotic|adult|nsfw|pornographic)|(?:explicit|sexual|erotic|adult).{0,90}(?:nature|content|material|request))/i;
+
+        localStorage.removeItem('rin-saionji-portfolio-client-id');
+        const rinClientId = `portfolio-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        let rinThinking = false;
+        let chatOverlayVisible = false;
+        let rinDialogueActive = false;
+        let rinDialogueMessageEl = null;
+        let rinDialogueChunks = [];
+        let rinDialogueIndex = -1;
+        let rinDialogueLoggedCount = 0;
+        let rinDialogueRunId = 0;
+        let rinVoiceLoading = false;
+        let rinVoiceAudio = null;
+        let rinVoiceSequence = 0;
+        let rinVoiceStopResolve = null;
+        const rinVoiceRequests = new Map();
+        let historyPanelVisible = false;
+        const chatHistory = [];
 
         let sphereVisible = true;
         let ropeEndY = 0;
@@ -76,12 +488,42 @@
         assistantImage.onload = () => {
             assistantLoaded = true;
         };
-        assistantImage.src = '../Halfbody Female by Sutemo.png';
+        assistantImage.src = '/Halfbody%20Female%20by%20Sutemo.png';
+
+        const jeremyImage = new Image();
+        let jeremyLoaded = false;
+        jeremyImage.onload = () => {
+            jeremyLoaded = true;
+        };
+        jeremyImage.src = '/Jeremy.jpeg';
+
+        const doorClosedImage = new Image();
+        const doorOpenImage = new Image();
+        let doorClosedLoaded = false;
+        let doorOpenLoaded = false;
+        let doorIsOpen = false;
+        let doorBounds = null;
+        let doorTransitionActive = false;
+        let doorTransitionStartedAt = 0;
+        let doorTransitionStartBounds = null;
+        let darkDoorPageReached = false;
+        let darkPageScrollOffset = 0;
+        let darkPageMaxScroll = 0;
+        const DOOR_TRANSITION_MS = 1100;
+
+        doorClosedImage.onload = () => {
+            doorClosedLoaded = true;
+        };
+        doorOpenImage.onload = () => {
+            doorOpenLoaded = true;
+        };
+        doorClosedImage.src = '/Door/door_closed.png';
+        doorOpenImage.src = '/Door/door_open.png';
 
         // 載入 Pacman 圖片
         for (let i = 1; i <= 3; i++) {
             const img = new Image();
-            img.src = `pacman/${i}.png`;
+            img.src = `/Web%20Portfolio/pacman/${i}.png`;
             img.onload = () => {
                 if (i === 3) pacmanLoaded = true;
             };
@@ -90,7 +532,7 @@
 
         // Blinky 幽靈相關
         const blinkyImage = new Image();
-        blinkyImage.src = 'pacman/blinky.png';
+        blinkyImage.src = '/Web%20Portfolio/pacman/blinky.png';
         let blinkyLoaded = false;
         blinkyImage.onload = () => {
             blinkyLoaded = true;
@@ -116,10 +558,141 @@
             } else {
                 assistantScrollOffset = Math.min(assistantScrollOffset, canvas.height);
             }
+
+            darkPageScrollOffset = Math.min(darkPageScrollOffset, darkPageMaxScroll);
+        });
+
+        function clampValue(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function getChatWheelDelta(e, pageHeight = chatMessagesEl.clientHeight || canvas.height) {
+            if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+                return e.deltaY * 18;
+            }
+
+            if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+                return e.deltaY * pageHeight;
+            }
+
+            return e.deltaY;
+        }
+
+        function getAssistantSceneScreenOffsetY() {
+            if (!portfolioReached || assistantScrollOffset <= 0) return null;
+            return canvas.height - assistantScrollOffset;
+        }
+
+        function isClickInsideAssistantDoor(clientX, clientY) {
+            const sceneOffsetY = getAssistantSceneScreenOffsetY();
+            if (sceneOffsetY === null || !doorBounds || doorTransitionActive || darkDoorPageReached) return false;
+
+            const sceneX = clientX;
+            const sceneY = clientY - sceneOffsetY;
+            return sceneX >= doorBounds.x &&
+                sceneX <= doorBounds.x + doorBounds.width &&
+                sceneY >= doorBounds.y &&
+                sceneY <= doorBounds.y + doorBounds.height;
+        }
+
+        function startDoorTransition() {
+            const sceneOffsetY = getAssistantSceneScreenOffsetY();
+            if (sceneOffsetY === null || !doorBounds || doorTransitionActive || darkDoorPageReached) return;
+
+            doorIsOpen = true;
+            doorTransitionActive = true;
+            doorTransitionStartedAt = performance.now();
+            darkPageScrollOffset = 0;
+            darkPageMaxScroll = 0;
+            doorTransitionStartBounds = {
+                x: doorBounds.x,
+                y: doorBounds.y + sceneOffsetY,
+                width: doorBounds.width,
+                height: doorBounds.height,
+            };
+            rinDialogueRunId += 1;
+            rinThinking = false;
+            rinDialogueActive = false;
+            rinVoiceLoading = false;
+            rinDialogueChunks = [];
+            rinDialogueIndex = -1;
+            rinDialogueMessageEl = null;
+            setSkipButtonVisible(false);
+            setHistoryPanelVisible(false);
+            stopRinVoice();
+            chatOverlayVisible = false;
+            chatOverlay.classList.remove('is-visible');
+            chatOverlay.setAttribute('aria-hidden', 'true');
+            setChatBusy(false);
+            canvas.style.cursor = 'default';
+        }
+
+        chatOverlay.addEventListener('wheel', (e) => {
+            if (!chatOverlayVisible) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            if (historyPanelVisible) {
+                historyMessagesEl.scrollTop += getChatWheelDelta(e);
+            }
+        }, { passive: false });
+
+        chatOverlay.addEventListener('click', (e) => {
+            if (!rinDialogueActive || historyPanelVisible) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            advanceRinDialogue();
+        });
+
+        skipButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            skipRinDialogue();
+        });
+
+        historyButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setHistoryPanelVisible(true);
+        });
+
+        historyCloseButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setHistoryPanelVisible(false);
+        });
+
+        historyPanel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        historyPanel.addEventListener('wheel', (e) => {
+            if (!historyPanelVisible) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            historyMessagesEl.scrollTop += getChatWheelDelta(e);
+        }, { passive: false });
+
+        window.addEventListener('keydown', (e) => {
+            if (!chatOverlayVisible || historyPanelVisible || !rinDialogueActive || e.key.toLowerCase() !== 'e') return;
+
+            e.preventDefault();
+            advanceRinDialogue();
         });
 
         window.addEventListener('wheel', (e) => {
-            if (!portfolioReached || isScrolling || assistantScrolling) return;
+            if (chatOverlayVisible && chatOverlay.contains(e.target)) return;
+
+            if (darkDoorPageReached) {
+                e.preventDefault();
+                const wheelDelta = getChatWheelDelta(e, canvas.height);
+                darkPageScrollOffset = clampValue(darkPageScrollOffset + wheelDelta, 0, darkPageMaxScroll);
+                return;
+            }
+
+            if (!portfolioReached || isScrolling || assistantScrolling || doorTransitionActive) return;
 
             if (e.deltaY > 0 && !assistantPageReached) {
                 assistantScrolling = true;
@@ -133,6 +706,11 @@
         }, { passive: false });
 
         canvas.addEventListener('click', (e) => {
+            if (isClickInsideAssistantDoor(e.clientX, e.clientY)) {
+                startDoorTransition();
+                return;
+            }
+
             // 點擊球體
             if (sphereVisible) {
                 const sphereX = canvas.width - 80;
@@ -174,6 +752,561 @@
             }
         });
 
+        canvas.addEventListener('mousemove', (e) => {
+            canvas.style.cursor = isClickInsideAssistantDoor(e.clientX, e.clientY) ? 'pointer' : 'default';
+        });
+
+        function clearChatContinueMarkers() {
+            chatMessagesEl.querySelectorAll('.chatContinueMarker').forEach((marker) => marker.remove());
+        }
+
+        function addHistoryEntry(speaker, text, type) {
+            const entry = { speaker, text, type };
+            chatHistory.push(entry);
+            renderHistoryPanel();
+            return entry;
+        }
+
+        function updateHistoryEntry(entry, text) {
+            if (!entry) return;
+            entry.text = text;
+            renderHistoryPanel();
+        }
+
+        function removeHistoryEntry(entry) {
+            if (!entry) return;
+
+            const index = chatHistory.indexOf(entry);
+            if (index >= 0) {
+                chatHistory.splice(index, 1);
+                renderHistoryPanel();
+            }
+        }
+
+        function renderHistoryPanel() {
+            historyMessagesEl.innerHTML = '';
+
+            chatHistory.forEach((entry) => {
+                const messageEl = document.createElement('div');
+                messageEl.className = `chatMessage ${entry.type}`;
+
+                const speakerEl = document.createElement('span');
+                speakerEl.className = 'chatSpeaker';
+                speakerEl.textContent = `${entry.speaker}:`;
+
+                const textEl = document.createElement('span');
+                textEl.className = 'chatText';
+                textEl.textContent = entry.text;
+
+                messageEl.appendChild(speakerEl);
+                messageEl.appendChild(textEl);
+                historyMessagesEl.appendChild(messageEl);
+            });
+
+            historyMessagesEl.scrollTop = historyMessagesEl.scrollHeight;
+        }
+
+        function resetLiveMessages() {
+            clearChatContinueMarkers();
+            chatMessagesEl.innerHTML = '';
+        }
+
+        function setHistoryPanelVisible(isVisible) {
+            historyPanelVisible = isVisible;
+            historyPanel.classList.toggle('is-visible', isVisible);
+            historyPanel.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+            historyButton.classList.toggle('is-active', isVisible);
+            renderHistoryPanel();
+            setChatBusy(rinThinking);
+
+            if (isVisible) {
+                window.setTimeout(() => {
+                    historyMessagesEl.scrollTop = historyMessagesEl.scrollHeight;
+                    historyCloseButton.focus();
+                }, 0);
+            } else if (chatOverlayVisible && !rinThinking && !rinDialogueActive) {
+                playerInput.focus();
+            } else {
+                historyButton.focus();
+            }
+        }
+
+        function setChatMessageText(messageEl, text, hasMore = false) {
+            const textEl = messageEl.querySelector('.chatText');
+            if (!textEl) return;
+
+            textEl.textContent = text;
+            updateHistoryEntry(messageEl.historyEntry, text);
+
+            const oldMarker = messageEl.querySelector('.chatContinueMarker');
+            if (oldMarker) {
+                oldMarker.remove();
+            }
+
+            if (hasMore) {
+                const markerEl = document.createElement('span');
+                markerEl.className = 'chatContinueMarker';
+                markerEl.textContent = '>';
+                messageEl.appendChild(markerEl);
+            }
+        }
+
+        function appendChatMessage(speaker, text, type, options = {}) {
+            clearChatContinueMarkers();
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `chatMessage ${type}`;
+            messageEl.historyEntry = options.log === false ? null : addHistoryEntry(speaker, text, type);
+
+            const speakerEl = document.createElement('span');
+            speakerEl.className = 'chatSpeaker';
+            speakerEl.textContent = `${speaker}:`;
+
+            const textEl = document.createElement('span');
+            textEl.className = 'chatText';
+            textEl.textContent = text;
+
+            messageEl.appendChild(speakerEl);
+            messageEl.appendChild(textEl);
+            if (options.hasMore) {
+                const markerEl = document.createElement('span');
+                markerEl.className = 'chatContinueMarker';
+                markerEl.textContent = '>';
+                messageEl.appendChild(markerEl);
+            }
+            chatMessagesEl.appendChild(messageEl);
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            return messageEl;
+        }
+
+        function setChatBusy(isBusy) {
+            rinThinking = isBusy;
+            const enabled = chatOverlayVisible && !rinThinking && !rinDialogueActive && !historyPanelVisible;
+            playerInput.disabled = !enabled;
+            sendButton.disabled = !enabled;
+            sendButton.textContent = (rinThinking || rinDialogueActive || rinVoiceLoading) ? 'WAIT' : 'SEND';
+            skipButton.disabled = !rinDialogueActive;
+            updateGenerationStatus();
+        }
+
+        function updateGenerationStatus() {
+            let statusText = '';
+            if (rinThinking) {
+                statusText = 'TEXT GENERATING';
+            } else if (rinVoiceLoading) {
+                statusText = 'VOICE GENERATING';
+            }
+
+            generationStatus.textContent = statusText;
+            generationStatus.classList.toggle('is-visible', Boolean(statusText));
+        }
+
+        function syncChatOverlay() {
+            const shouldShow = !darkDoorPageReached && !doorTransitionActive && assistantScrollOffset > canvas.height * 0.82;
+
+            if (shouldShow !== chatOverlayVisible) {
+                chatOverlayVisible = shouldShow;
+                chatOverlay.classList.toggle('is-visible', shouldShow);
+                chatOverlay.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+            }
+
+            setChatBusy(rinThinking);
+        }
+
+        async function checkOllamaHealth() {
+            if (window.location.protocol === 'file:') {
+                connectionStatus.textContent = 'SERVER REQUIRED';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                connectionStatus.textContent = data.ok ? `OLLAMA: ${data.model}` : 'OLLAMA: OFFLINE';
+            } catch {
+                connectionStatus.textContent = 'OLLAMA: OFFLINE';
+            }
+        }
+
+        function sendPresencePing() {
+            if (window.location.protocol === 'file:') return;
+
+            fetch('/api/presence', {
+                method: 'POST',
+                keepalive: true,
+            }).catch(() => {});
+        }
+
+        function startPresenceHeartbeat() {
+            sendPresencePing();
+            window.setInterval(sendPresencePing, PRESENCE_PING_INTERVAL_MS);
+
+            window.addEventListener('pagehide', () => {
+                if (window.location.protocol === 'file:') return;
+
+                const payload = JSON.stringify({ clientId: rinClientId });
+                const blob = new Blob([payload], { type: 'application/json' });
+
+                if (!navigator.sendBeacon || !navigator.sendBeacon('/api/presence/close', blob)) {
+                    fetch('/api/presence/close', {
+                        method: 'POST',
+                        body: payload,
+                        headers: { 'Content-Type': 'application/json' },
+                        keepalive: true,
+                    }).catch(() => {});
+                }
+            });
+        }
+
+        function isDisallowedChatMessage(message) {
+            return DISALLOWED_CHAT_PATTERNS.some((pattern) => pattern.test(message));
+        }
+
+        function makeBlockedChatError() {
+            const error = new Error('blocked');
+            error.blocked = true;
+            return error;
+        }
+
+        function bounceSendButton() {
+            sendButton.classList.remove('is-denied');
+            void sendButton.offsetWidth;
+            sendButton.classList.add('is-denied');
+            window.setTimeout(() => {
+                sendButton.classList.remove('is-denied');
+            }, 280);
+        }
+
+        function stopRinVoice() {
+            rinVoiceSequence += 1;
+            if (rinVoiceStopResolve) {
+                const resolveStoppedVoice = rinVoiceStopResolve;
+                rinVoiceStopResolve = null;
+                resolveStoppedVoice();
+            }
+
+            if (!rinVoiceAudio) return;
+
+            rinVoiceAudio.pause();
+            rinVoiceAudio.currentTime = 0;
+            rinVoiceAudio = null;
+        }
+
+        function setSkipButtonVisible(isVisible) {
+            skipButton.classList.toggle('is-visible', isVisible);
+            skipButton.disabled = !isVisible;
+        }
+
+        function wait(ms) {
+            return new Promise((resolve) => window.setTimeout(resolve, ms));
+        }
+
+        async function loadRinVoiceForText(text) {
+            const key = String(text || '').trim();
+            if (!key || window.location.protocol === 'file:') {
+                return { voiceUrl: null };
+            }
+
+            if (rinVoiceRequests.has(key)) {
+                return rinVoiceRequests.get(key);
+            }
+
+            const request = (async () => {
+                const response = await fetch('/api/voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: key }),
+                });
+                const data = await response.json();
+                return response.ok ? data : { voiceUrl: null };
+            })().catch(() => ({ voiceUrl: null }));
+
+            rinVoiceRequests.set(key, request);
+            return request;
+        }
+
+        function preloadRinVoice(index) {
+            const chunk = rinDialogueChunks[index];
+            if (!chunk) return;
+            loadRinVoiceForText(chunk);
+        }
+
+        function playRinVoiceAndWait(voiceUrl, voiceStyle = 'normal') {
+            if (!voiceUrl) {
+                return wait(900);
+            }
+
+            return new Promise((resolve) => {
+                const sequence = ++rinVoiceSequence;
+                const audio = new Audio(voiceUrl);
+                rinVoiceAudio = audio;
+                rinVoiceAudio.volume = voiceStyle === 'soft' ? 0.76 : voiceStyle === 'loud' ? 1 : 0.92;
+
+                let settled = false;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    if (rinVoiceStopResolve === finish) {
+                        rinVoiceStopResolve = null;
+                    }
+                    if (sequence === rinVoiceSequence && rinVoiceAudio === audio) {
+                        rinVoiceAudio = null;
+                    }
+                    resolve();
+                };
+
+                rinVoiceStopResolve = finish;
+                audio.addEventListener('ended', finish, { once: true });
+                audio.addEventListener('error', finish, { once: true });
+                audio.play().catch(finish);
+            });
+        }
+
+        function splitLongDialoguePart(part, maxLength) {
+            const phraseParts = part.match(/[^,;:]+[,;:]+["']?|[^,;:]+$/g) || [part];
+            const chunks = [];
+            let current = '';
+
+            phraseParts.forEach((phrase) => {
+                const trimmedPhrase = phrase.trim();
+                if (!trimmedPhrase) return;
+
+                const next = current ? `${current} ${trimmedPhrase}` : trimmedPhrase;
+                if (next.length <= maxLength || !current) {
+                    current = next;
+                    return;
+                }
+
+                chunks.push(current);
+                current = trimmedPhrase;
+            });
+
+            if (current) {
+                chunks.push(current);
+            }
+
+            return chunks;
+        }
+
+        function splitRinDialogue(text) {
+            const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+            if (!cleaned) return ['...'];
+
+            const parts = cleaned.match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g) || [cleaned];
+            const chunks = [];
+            let current = '';
+
+            parts.forEach((part) => {
+                const sentence = part.trim();
+                if (!sentence) return;
+
+                const next = current ? `${current} ${sentence}` : sentence;
+                if (next.length > RIN_DIALOGUE_CHUNK_LIMIT && current) {
+                    chunks.push(current);
+                    current = sentence;
+                } else {
+                    current = next;
+                }
+            });
+
+            if (current) {
+                if (current.length > RIN_DIALOGUE_CHUNK_LIMIT * 1.55) {
+                    chunks.push(...splitLongDialoguePart(current, RIN_DIALOGUE_CHUNK_LIMIT));
+                } else {
+                    chunks.push(current);
+                }
+            }
+
+            return chunks.length ? chunks : [cleaned];
+        }
+
+        async function showRinDialogueChunk(index, runId) {
+            if (runId !== rinDialogueRunId || !rinDialogueActive || !rinDialogueMessageEl) return;
+            if (index < 0 || index >= rinDialogueChunks.length) {
+                finishRinDialogue(runId);
+                return;
+            }
+
+            const chunk = rinDialogueChunks[index];
+            rinDialogueIndex = index;
+            rinVoiceLoading = true;
+            setChatMessageText(rinDialogueMessageEl, '...', false);
+            setChatBusy(false);
+
+            const voice = await loadRinVoiceForText(chunk);
+            if (runId !== rinDialogueRunId || !rinDialogueActive || rinDialogueIndex !== index) return;
+
+            rinVoiceLoading = false;
+            const hasMore = index < rinDialogueChunks.length - 1;
+            addHistoryEntry('RIN', chunk, 'rin');
+            rinDialogueLoggedCount = Math.max(rinDialogueLoggedCount, index + 1);
+            setChatMessageText(rinDialogueMessageEl, chunk, hasMore);
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            setChatBusy(false);
+            preloadRinVoice(index + 1);
+
+            await playRinVoiceAndWait(voice.voiceUrl, voice.voiceStyle);
+            if (runId !== rinDialogueRunId || !rinDialogueActive || rinDialogueIndex !== index) return;
+
+            if (hasMore) {
+                showRinDialogueChunk(index + 1, runId);
+            } else {
+                finishRinDialogue(runId);
+            }
+        }
+
+        function showRinDialogue(reply, firstMessageEl) {
+            const chunks = splitRinDialogue(reply);
+            rinDialogueRunId += 1;
+            const runId = rinDialogueRunId;
+
+            stopRinVoice();
+            rinDialogueChunks = chunks;
+            rinDialogueIndex = -1;
+            rinDialogueLoggedCount = 0;
+            rinDialogueActive = true;
+            rinDialogueMessageEl = firstMessageEl;
+            rinVoiceLoading = true;
+            setSkipButtonVisible(true);
+            setChatMessageText(firstMessageEl, '...', false);
+            setChatBusy(false);
+            showRinDialogueChunk(0, runId);
+        }
+
+        function advanceRinDialogue() {
+            if (!rinDialogueActive || rinThinking || rinVoiceLoading || !rinDialogueMessageEl) return false;
+
+            const nextIndex = rinDialogueIndex + 1;
+            if (nextIndex >= rinDialogueChunks.length) {
+                stopRinVoice();
+                finishRinDialogue(rinDialogueRunId);
+                return true;
+            }
+
+            stopRinVoice();
+            showRinDialogueChunk(nextIndex, rinDialogueRunId);
+            return true;
+        }
+
+        function skipRinDialogue() {
+            if (!rinDialogueActive || !rinDialogueMessageEl) return false;
+
+            const finalChunk = rinDialogueChunks[rinDialogueChunks.length - 1] || '...';
+            rinDialogueRunId += 1;
+            stopRinVoice();
+
+            for (let i = rinDialogueLoggedCount; i < rinDialogueChunks.length; i++) {
+                addHistoryEntry('RIN', rinDialogueChunks[i], 'rin');
+            }
+            rinDialogueLoggedCount = rinDialogueChunks.length;
+
+            setChatMessageText(rinDialogueMessageEl, finalChunk, false);
+            finishRinDialogue(rinDialogueRunId);
+            return true;
+        }
+
+        function finishRinDialogue(runId) {
+            if (runId !== rinDialogueRunId) return;
+
+            rinDialogueActive = false;
+            rinVoiceLoading = false;
+            rinDialogueChunks = [];
+            rinDialogueIndex = -1;
+            rinDialogueLoggedCount = 0;
+            rinDialogueMessageEl = null;
+            setSkipButtonVisible(false);
+            setChatBusy(false);
+
+            if (chatOverlayVisible && !historyPanelVisible) {
+                playerInput.focus();
+            }
+        }
+
+        async function sendMessageToRin(message) {
+            if (window.location.protocol === 'file:') {
+                throw new Error('Open this portfolio through the local server first.');
+            }
+
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clientId: rinClientId,
+                    message,
+                }),
+            });
+            const data = await response.json();
+
+            if (data.blocked) {
+                throw makeBlockedChatError();
+            }
+
+            if (!response.ok) {
+                throw new Error(data.reply || data.error || 'Rin could not reply.');
+            }
+
+            if (data.model) {
+                connectionStatus.textContent = `OLLAMA: ${data.model}`;
+            }
+
+            if (SAFETY_REFUSAL_PATTERN.test(data.reply || '')) {
+                throw makeBlockedChatError();
+            }
+
+            return data.reply;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = playerInput.value.trim();
+            if (!message || rinThinking || rinDialogueActive) return;
+
+            if (isDisallowedChatMessage(message)) {
+                bounceSendButton();
+                playerInput.focus();
+                return;
+            }
+
+            setHistoryPanelVisible(false);
+            resetLiveMessages();
+            stopRinVoice();
+            playerInput.value = '';
+            const playerMessageEl = appendChatMessage('YOU', message, 'player');
+            const thinkingEl = appendChatMessage('RIN', '...', 'rin', { log: false });
+            setChatBusy(true);
+
+            try {
+                const reply = await sendMessageToRin(message);
+                if (doorTransitionActive || darkDoorPageReached) return;
+                showRinDialogue(reply, thinkingEl);
+            } catch (error) {
+                if (doorTransitionActive || darkDoorPageReached) return;
+
+                if (error.blocked) {
+                    removeHistoryEntry(playerMessageEl.historyEntry);
+                    playerMessageEl.remove();
+                    thinkingEl.remove();
+                    playerInput.value = message;
+                    bounceSendButton();
+                    return;
+                }
+
+                const errorText = `Hmph. ${error.message}`;
+                thinkingEl.historyEntry = addHistoryEntry('RIN', errorText, 'rin');
+                setChatMessageText(thinkingEl, errorText);
+                connectionStatus.textContent = 'OLLAMA: ERROR';
+            } finally {
+                setChatBusy(false);
+                if (chatOverlayVisible && !rinDialogueActive) {
+                    playerInput.focus();
+                }
+            }
+        });
+
+        appendChatMessage('RIN', RIN_INITIAL_MESSAGE, 'rin');
+        checkOllamaHealth();
+        startPresenceHeartbeat();
+
         function drawRoundedRect(x, y, width, height, radius) {
             const r = Math.min(radius, width / 2, height / 2);
             ctx.beginPath();
@@ -213,6 +1346,88 @@
             if (lineCount < maxLines && line.length > 0) {
                 ctx.fillText(line, x, y);
             }
+        }
+
+        function drawWrappedWords(text, x, y, maxWidth, lineHeight, maxLines = 99) {
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            const words = String(text || '').split(/\s+/).filter(Boolean);
+            let line = '';
+            let lines = 0;
+
+            for (const word of words) {
+                const testLine = line ? `${line} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxWidth && line) {
+                    ctx.fillText(line, x, y);
+                    y += lineHeight;
+                    lines += 1;
+                    if (lines >= maxLines) return y;
+                    line = word;
+                } else {
+                    line = testLine;
+                }
+            }
+
+            if (line && lines < maxLines) {
+                ctx.fillText(line, x, y);
+                y += lineHeight;
+            }
+
+            return y;
+        }
+
+        function drawImageCover(image, x, y, width, height) {
+            if (!image || !image.width || !image.height) return;
+
+            const sourceAspect = image.width / image.height;
+            const targetAspect = width / height;
+            let sx = 0;
+            let sy = 0;
+            let sw = image.width;
+            let sh = image.height;
+
+            if (sourceAspect > targetAspect) {
+                sw = image.height * targetAspect;
+                sx = (image.width - sw) / 2;
+            } else {
+                sh = image.width / targetAspect;
+                sy = Math.min(image.height - sh, Math.max(0, (image.height - sh) * 0.42));
+            }
+
+            ctx.drawImage(image, sx, sy, sw, sh, x, y, width, height);
+        }
+
+        function drawCvPanel(x, y, width, height, title) {
+            ctx.save();
+            ctx.shadowBlur = 16;
+            ctx.shadowColor = 'rgba(0, 255, 0, 0.24)';
+            ctx.fillStyle = 'rgba(0, 10, 0, 0.74)';
+            drawRoundedRect(x, y, width, height, 8);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.72)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 12px Consolas, "Courier New", monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText(title, x + 14, y + 24);
+
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.22)';
+            ctx.beginPath();
+            ctx.moveTo(x + 12, y + 34);
+            ctx.lineTo(x + width - 12, y + 34);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawCvBullet(text, x, y, maxWidth, lineHeight, maxLines = 3) {
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('>', x, y);
+            return drawWrappedWords(text, x + 16, y, maxWidth - 16, lineHeight, maxLines);
         }
 
         function drawSphere() {
@@ -509,6 +1724,381 @@
             ctx.globalAlpha = 1;
         }
 
+        function drawAssistantDoor(isSmall, imageTop, availableImageHeight, chatY, time) {
+            const doorImage = doorIsOpen ? doorOpenImage : doorClosedImage;
+            const doorLoaded = doorIsOpen ? doorOpenLoaded : doorClosedLoaded;
+            const doorAspect = doorLoaded && doorImage.height ? doorImage.width / doorImage.height : 0.5;
+            const doorHeight = Math.min(isSmall ? 190 : 300, Math.max(isSmall ? 140 : 230, availableImageHeight * (isSmall ? 0.44 : 0.48)));
+            const doorWidth = doorHeight * doorAspect;
+            const doorCenterX = isSmall ? canvas.width * 0.23 : canvas.width * 0.205;
+            const doorX = Math.max(22, Math.min(doorCenterX - doorWidth / 2, canvas.width - doorWidth - 22));
+            const targetDoorY = imageTop + availableImageHeight * (isSmall ? 0.28 : 0.38);
+            const doorY = Math.max(imageTop + 28, Math.min(targetDoorY, chatY - doorHeight - 30));
+
+            doorBounds = {
+                x: doorX,
+                y: doorY,
+                width: doorWidth,
+                height: doorHeight,
+            };
+
+            ctx.save();
+            ctx.shadowBlur = doorIsOpen ? 24 : 16;
+            ctx.shadowColor = doorIsOpen ? 'rgba(0, 255, 120, 0.72)' : 'rgba(0, 255, 0, 0.45)';
+            ctx.imageSmoothingEnabled = false;
+
+            if (doorLoaded) {
+                ctx.drawImage(doorImage, doorX, doorY, doorWidth, doorHeight);
+            } else {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.75;
+                ctx.strokeRect(doorX, doorY, doorWidth, doorHeight);
+            }
+
+            ctx.restore();
+        }
+
+        function drawDoorTransitionOverlay() {
+            if (!doorTransitionActive || !doorTransitionStartBounds) return;
+
+            const elapsed = performance.now() - doorTransitionStartedAt;
+            const progress = Math.min(1, elapsed / DOOR_TRANSITION_MS);
+            const ease = progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            const bounds = doorTransitionStartBounds;
+            const targetScale = Math.max(canvas.width / bounds.width, canvas.height / bounds.height) * 1.75;
+            const scale = 1 + (targetScale - 1) * ease;
+            const centerX = bounds.x + bounds.width / 2;
+            const centerY = bounds.y + bounds.height / 2;
+            const drawWidth = bounds.width * scale;
+            const drawHeight = bounds.height * scale;
+            const drawX = centerX - drawWidth / 2;
+            const drawY = centerY - drawHeight / 2;
+
+            ctx.save();
+            ctx.globalAlpha = Math.min(0.96, progress * 1.1);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, 1 - Math.max(0, progress - 0.82) / 0.18);
+            ctx.shadowBlur = 36 + ease * 64;
+            ctx.shadowColor = 'rgba(0, 255, 100, 0.72)';
+            ctx.imageSmoothingEnabled = false;
+
+            if (doorOpenLoaded) {
+                ctx.drawImage(doorOpenImage, drawX, drawY, drawWidth, drawHeight);
+            } else {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
+            }
+            ctx.restore();
+
+            if (progress >= 1) {
+                doorTransitionActive = false;
+                darkDoorPageReached = true;
+                doorTransitionStartBounds = null;
+            }
+        }
+
+        function updateDarkPageScrollBounds(contentBottom) {
+            const bottomPadding = 36;
+            darkPageMaxScroll = Math.max(0, contentBottom + bottomPadding - canvas.height);
+            darkPageScrollOffset = clampValue(darkPageScrollOffset, 0, darkPageMaxScroll);
+        }
+
+        function drawDarkPageScrollbar() {
+            if (darkPageMaxScroll <= 1) return;
+
+            const trackHeight = Math.max(130, canvas.height - 96);
+            const trackX = canvas.width - 16;
+            const trackY = 48;
+            const thumbHeight = Math.max(42, trackHeight * canvas.height / (canvas.height + darkPageMaxScroll));
+            const thumbY = trackY + (trackHeight - thumbHeight) * (darkPageScrollOffset / darkPageMaxScroll);
+
+            ctx.save();
+            ctx.globalAlpha = 0.72;
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.34)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(trackX, trackY);
+            ctx.lineTo(trackX, trackY + trackHeight);
+            ctx.stroke();
+
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ff00';
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(trackX, thumbY);
+            ctx.lineTo(trackX, thumbY + thumbHeight);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawDarkDoorPage() {
+            const time = Date.now() / 1000;
+            const isSmall = canvas.width < 760;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2,
+                canvas.height / 2,
+                0,
+                canvas.width / 2,
+                canvas.height / 2,
+                Math.max(canvas.width, canvas.height) * 0.72,
+            );
+            gradient.addColorStop(0, 'rgba(0, 18, 6, 0.12)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.07;
+            const gridSize = isSmall ? 34 : 44;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            const scanX = (time * 58) % canvas.width;
+            ctx.save();
+            ctx.globalAlpha = 0.18;
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(scanX, 0);
+            ctx.lineTo(scanX, canvas.height);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(0, -darkPageScrollOffset);
+
+            if (isSmall) {
+                const margin = 18;
+                const width = canvas.width - margin * 2;
+                let y = 32;
+
+                ctx.save();
+                ctx.fillStyle = '#00ff00';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#00ff00';
+                ctx.font = 'bold 24px Consolas, "Courier New", monospace';
+                ctx.fillText('PANG JUN MING', margin, y);
+                ctx.font = '12px Consolas, "Courier New", monospace';
+                ctx.fillText('ARTIFICIAL INTELLIGENCE STUDENT', margin, y + 24);
+                ctx.restore();
+
+                y += 54;
+                const photoW = Math.min(150, width * 0.42);
+                const photoH = photoW * 1.28;
+                ctx.save();
+                drawRoundedRect(margin, y, photoW, photoH, 8);
+                ctx.clip();
+                if (jeremyLoaded) {
+                    drawImageCover(jeremyImage, margin, y, photoW, photoH);
+                } else {
+                    ctx.fillStyle = 'rgba(0, 30, 0, 0.8)';
+                    ctx.fillRect(margin, y, photoW, photoH);
+                }
+                ctx.restore();
+                ctx.strokeStyle = '#00ff00';
+                ctx.strokeRect(margin, y, photoW, photoH);
+
+                const infoX = margin + photoW + 14;
+                ctx.fillStyle = '#d8ffd8';
+                ctx.font = '12px Consolas, "Courier New", monospace';
+                drawWrappedWords('Aspiring Unity / C# Programmer / AI Engineer', infoX, y + 16, width - photoW - 14, 17, 4);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillText('CGPA 3.70', infoX, y + photoH - 34);
+                ctx.fillText('MMU Melaka', infoX, y + photoH - 14);
+
+                y += photoH + 18;
+                drawCvPanel(margin, y, width, 142, 'PROFILE');
+                ctx.fillStyle = '#d8ffd8';
+                ctx.font = '13px Consolas, "Courier New", monospace';
+                drawWrappedWords('Artificial Intelligence student interested in Unity, C# development, interactive systems, gameplay logic, and practical AI applications.', margin + 14, y + 58, width - 28, 18, 5);
+
+                y += 158;
+                drawCvPanel(margin, y, width, 154, 'KEY INFO');
+                ctx.fillStyle = '#d8ffd8';
+                ctx.font = '12px Consolas, "Courier New", monospace';
+                let lineY = y + 55;
+                lineY = drawCvBullet('Programming: C, C++, C#, JavaScript, PHP, Python', margin + 14, lineY, width - 28, 17, 2);
+                lineY = drawCvBullet('Web: HTML, CSS', margin + 14, lineY + 4, width - 28, 17, 1);
+                lineY = drawCvBullet('Tools: Unity, DaVinci Resolve, NLP, Computer Vision, Expert System', margin + 14, lineY + 4, width - 28, 17, 2);
+                drawWrappedWords('junmingpang@outlook.com | +6011-57824696', margin + 14, lineY + 10, width - 28, 17, 2);
+                updateDarkPageScrollBounds(y + 154);
+                ctx.restore();
+                drawDarkPageScrollbar();
+                return;
+            }
+
+            const isShort = false;
+            const margin = isShort ? 30 : 44;
+            const contentWidth = Math.min(canvas.width - margin * 2, 1280);
+            const contentX = (canvas.width - contentWidth) / 2;
+            const top = isShort ? 18 : 28;
+            const gap = isShort ? 10 : 14;
+            const leftW = Math.min(isShort ? 300 : 320, contentWidth * (isShort ? 0.27 : 0.28));
+            const rightX = contentX + leftW + gap;
+            const rightW = contentWidth - leftW - gap;
+            const headerRuleY = top + (isShort ? 60 : 72);
+            const panelTop = top + (isShort ? 64 : 74);
+            const headerTitleSize = isShort ? 34 : 42;
+            const headerTextSize = isShort ? 12 : 15;
+            const bodyFontSize = isShort ? 11 : 12;
+            const mainBodyFontSize = isShort ? 12 : 13;
+            const bodyLine = isShort ? 14 : 16;
+            const mainLine = isShort ? 15 : 18;
+            const identityH = isShort ? 218 : 270;
+            const contactH = isShort ? 92 : 112;
+            const skillsH = isShort ? 110 : 142;
+            const languagesH = isShort ? 54 : 72;
+            const profileH = isShort ? 92 : 112;
+            const educationH = isShort ? 82 : 100;
+            const experienceH = isShort ? 142 : 168;
+            const bottomPanelH = isShort ? 124 : 154;
+
+            ctx.save();
+            ctx.fillStyle = '#00ff00';
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = '#00ff00';
+            ctx.font = `bold ${headerTitleSize}px Consolas, "Courier New", monospace`;
+            ctx.textAlign = 'left';
+            ctx.fillText('PANG JUN MING', rightX, top + (isShort ? 28 : 34));
+            ctx.font = `${headerTextSize}px Consolas, "Courier New", monospace`;
+            ctx.fillText('ARTIFICIAL INTELLIGENCE STUDENT', rightX, top + (isShort ? 52 : 62));
+            ctx.globalAlpha = 0.78;
+            ctx.fillText('Aspiring Unity / C# Programmer / AI Engineer', rightX + (isShort ? 286 : 340), top + (isShort ? 52 : 62));
+            ctx.restore();
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.55)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(contentX, headerRuleY);
+            ctx.lineTo(contentX + contentWidth, headerRuleY);
+            ctx.stroke();
+            ctx.restore();
+
+            drawCvPanel(contentX, panelTop, leftW, identityH, 'IDENTITY');
+            const photoX = contentX + 20;
+            const photoY = panelTop + (isShort ? 42 : 48);
+            const photoW = leftW - 40;
+            const photoH = identityH - (isShort ? 58 : 66);
+            ctx.save();
+            drawRoundedRect(photoX, photoY, photoW, photoH, 8);
+            ctx.clip();
+            if (jeremyLoaded) {
+                drawImageCover(jeremyImage, photoX, photoY, photoW, photoH);
+            } else {
+                ctx.fillStyle = 'rgba(0, 30, 0, 0.8)';
+                ctx.fillRect(photoX, photoY, photoW, photoH);
+            }
+            ctx.restore();
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(photoX, photoY, photoW, photoH);
+
+            let leftY = panelTop + identityH + gap;
+            drawCvPanel(contentX, leftY, leftW, contactH, 'CONTACT');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            let cy = leftY + (isShort ? 46 : 55);
+            cy = drawWrappedWords('+6011-57824696', contentX + 16, cy, leftW - 32, bodyLine, 1);
+            cy = drawWrappedWords('junmingpang@outlook.com', contentX + 16, cy + 1, leftW - 32, bodyLine, 1);
+            cy = drawWrappedWords('Sitiawan, Perak, Malaysia', contentX + 16, cy + 1, leftW - 32, bodyLine, 1);
+            drawWrappedWords(isShort ? 'linkedin.com/in/pang-jun-ming' : 'linkedin.com/in/pang-jun-ming-8011b7373', contentX + 16, cy + 1, leftW - 32, bodyLine, isShort ? 1 : 2);
+
+            leftY += contactH + gap;
+            drawCvPanel(contentX, leftY, leftW, skillsH, 'SKILLS');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            let sy = leftY + (isShort ? 46 : 55);
+            sy = drawCvBullet('Programming: C, C++, C#, JavaScript, PHP, Python', contentX + 16, sy, leftW - 32, bodyLine, isShort ? 2 : 3);
+            sy = drawCvBullet('Web: HTML, CSS', contentX + 16, sy + 2, leftW - 32, bodyLine, 1);
+            drawCvBullet('Tools: Unity, DaVinci Resolve, NLP, Computer Vision, Expert System', contentX + 16, sy + 2, leftW - 32, bodyLine, isShort ? 2 : 3);
+
+            leftY += skillsH + gap;
+            drawCvPanel(contentX, leftY, leftW, languagesH, 'LANGUAGES');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            ctx.fillText('Mandarin - Native Speaker', contentX + 16, leftY + (isShort ? 36 : 50));
+            ctx.fillText('English - Level B1', contentX + 16, leftY + (isShort ? 50 : 66));
+
+            let rightY = panelTop;
+            drawCvPanel(rightX, rightY, rightW, profileH, 'PROFILE');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${mainBodyFontSize}px Consolas, "Courier New", monospace`;
+            drawWrappedWords('Artificial Intelligence student at Multimedia University. Interested in Unity and C# development, interactive systems, gameplay logic, and practical AI applications. Able to combine IT knowledge, multimedia awareness, and technical support experience to build user-oriented digital projects.', rightX + 18, rightY + (isShort ? 46 : 56), rightW - 36, mainLine, isShort ? 3 : 4);
+
+            rightY += profileH + gap;
+            drawCvPanel(rightX, rightY, rightW, educationH, 'EDUCATION');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${mainBodyFontSize}px Consolas, "Courier New", monospace`;
+            ctx.fillText('MULTIMEDIA UNIVERSITY - Melaka, Malaysia', rightX + 18, rightY + (isShort ? 42 : 54));
+            ctx.fillText('Artificial Intelligence Programme | CGPA: 3.70 (Current)', rightX + 18, rightY + (isShort ? 59 : 76));
+            ctx.fillText('Diploma in Information Technology | CGPA: 3.92 | 2022 - 2024', rightX + 18, rightY + (isShort ? 76 : 96));
+
+            rightY += educationH + gap;
+            drawCvPanel(rightX, rightY, rightW, experienceH, 'WORK EXPERIENCE');
+            ctx.fillStyle = '#00ff00';
+            ctx.font = `bold ${mainBodyFontSize}px Consolas, "Courier New", monospace`;
+            ctx.fillText('PTT Company | IT Support Intern | July 2023 - October 2023', rightX + 18, rightY + (isShort ? 48 : 58));
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            let ey = rightY + (isShort ? 68 : 80);
+            ey = drawCvBullet(isShort ? 'Provided technical support and troubleshooting for staff.' : 'Provided technical support and troubleshooting assistance for staff.', rightX + 18, ey, rightW - 36, bodyLine, isShort ? 1 : 2);
+            ey = drawCvBullet(isShort ? 'Installed and maintained desktops, peripherals, and printers.' : 'Installed, configured, and maintained desktop computers, peripherals, and printers.', rightX + 18, ey + 2, rightW - 36, bodyLine, isShort ? 1 : 2);
+            ey = drawCvBullet(isShort ? 'Diagnosed hardware/software issues and configured user accounts.' : 'Diagnosed hardware and software issues, set up user accounts, permissions, and passwords.', rightX + 18, ey + 2, rightW - 36, bodyLine, isShort ? 1 : 2);
+            drawCvBullet(isShort ? 'Assisted HR with staff records and daily IT operations.' : 'Assisted HR with staff list checking, staff information updates, attendance records, and daily IT operations.', rightX + 18, ey + 2, rightW - 36, bodyLine, isShort ? 1 : 2);
+
+            rightY += experienceH + gap;
+            const halfW = (rightW - gap) / 2;
+            drawCvPanel(rightX, rightY, halfW, bottomPanelH, 'PROJECT / CAREER FOCUS');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            let fy = rightY + (isShort ? 46 : 55);
+            fy = drawCvBullet('Unity / C# development: gameplay scripting, scene logic, UI interaction, and prototype building.', rightX + 16, fy, halfW - 32, bodyLine, isShort ? 3 : 4);
+            fy = drawCvBullet('AI application direction: applying AI concepts to interactive tools and user-focused software projects.', rightX + 16, fy + 2, halfW - 32, bodyLine, isShort ? 3 : 4);
+            drawCvBullet('Multimedia-oriented thinking: connects technical implementation with user preference and presentation quality.', rightX + 16, fy + 2, halfW - 32, bodyLine, isShort ? 3 : 4);
+
+            const strengthX = rightX + halfW + gap;
+            drawCvPanel(strengthX, rightY, halfW, bottomPanelH, 'STRENGTHS');
+            ctx.fillStyle = '#d8ffd8';
+            ctx.font = `${bodyFontSize}px Consolas, "Courier New", monospace`;
+            let ty = rightY + (isShort ? 46 : 55);
+            ty = drawCvBullet('Programming fundamentals and problem-solving mindset.', strengthX + 16, ty, halfW - 32, bodyLine, isShort ? 2 : 3);
+            ty = drawCvBullet('Hands-on troubleshooting experience in hardware and software support.', strengthX + 16, ty + 2, halfW - 32, bodyLine, isShort ? 2 : 3);
+            drawCvBullet('Self-learning attitude toward AI, Unity, and modern software development.', strengthX + 16, ty + 2, halfW - 32, bodyLine, isShort ? 2 : 3);
+
+            updateDarkPageScrollBounds(Math.max(leftY + languagesH, rightY + bottomPanelH));
+            ctx.restore();
+            drawDarkPageScrollbar();
+        }
+
         function drawAssistantScene() {
             const time = Date.now() / 1000;
             const isSmall = canvas.width < 700;
@@ -559,11 +2149,9 @@
             ctx.fillText('> CHANNEL: PORTFOLIO_LINK', 20, 54);
             ctx.restore();
 
-            const chatMargin = isSmall ? 18 : 48;
-            const chatWidth = Math.min(canvas.width - chatMargin * 2, isSmall ? canvas.width - chatMargin * 2 : 920);
-            const chatHeight = Math.max(isSmall ? 138 : 142, Math.min(isSmall ? 166 : 180, canvas.height * (isSmall ? 0.22 : 0.2)));
-            const chatX = (canvas.width - chatWidth) / 2;
-            const chatY = canvas.height - chatHeight - chatMargin;
+            const overlayMargin = isSmall ? 18 : 48;
+            const overlayHeight = Math.max(isSmall ? 138 : 142, Math.min(isSmall ? 166 : 180, canvas.height * (isSmall ? 0.22 : 0.2)));
+            const chatY = canvas.height - overlayHeight - overlayMargin;
             const imageTop = isSmall ? 24 : 38;
             const availableImageHeight = Math.max(180, chatY - imageTop - 18);
             const imageAspect = assistantLoaded && assistantImage.height ? assistantImage.width / assistantImage.height : 0.853;
@@ -591,6 +2179,8 @@
             ctx.stroke();
             ctx.restore();
 
+            drawAssistantDoor(isSmall, imageTop, availableImageHeight, chatY, time);
+
             ctx.save();
             ctx.shadowBlur = 22;
             ctx.shadowColor = 'rgba(0, 255, 0, 0.45)';
@@ -607,62 +2197,6 @@
                 ctx.fillText('LOADING GUIDE...', imageX + imageWidth / 2, imageY + imageHeight / 2);
             }
             ctx.restore();
-
-            const transitionReveal = Math.max(0, Math.min(1, (assistantScrollOffset / canvas.height - 0.55) / 0.45));
-            const timeReveal = assistantPageEnteredAt ? Math.min(1, (Date.now() - assistantPageEnteredAt) / 480) : 0;
-            const reveal = Math.max(transitionReveal, timeReveal);
-
-            if (reveal > 0.01) {
-                const ease = 1 - Math.pow(1 - reveal, 3);
-                const bounce = Math.sin(reveal * Math.PI) * 10;
-                const panelY = chatY + (1 - ease) * 46 - bounce;
-
-                ctx.save();
-                ctx.globalAlpha = reveal;
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = 'rgba(0, 255, 0, 0.65)';
-                ctx.fillStyle = 'rgba(0, 12, 0, 0.9)';
-                drawRoundedRect(chatX, panelY, chatWidth, chatHeight, 8);
-                ctx.fill();
-
-                ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = '#00ff00';
-                ctx.font = isSmall ? '12px monospace' : '13px monospace';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'alphabetic';
-                ctx.fillText('AI GUIDE // ONLINE', chatX + 22, panelY + 30);
-
-                ctx.strokeStyle = 'rgba(0, 255, 0, 0.32)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(chatX + 20, panelY + 45);
-                ctx.lineTo(chatX + chatWidth - 20, panelY + 45);
-                ctx.stroke();
-
-                const fullMessage = '\u4f60\u597d\uff0c\u6b61\u8fce\u4f86\u5230 Pang Jun Ming Portfolio\u3002\u6211\u5728\u9019\u88e1\u5e6b\u4f60\u4ecb\u7d39\u4f5c\u54c1\u548c\u5c08\u6848\u3002';
-                const elapsed = assistantPageEnteredAt ? Date.now() - assistantPageEnteredAt : 0;
-                const typedLength = assistantPageEnteredAt ? Math.min(fullMessage.length, Math.floor(elapsed / 38)) : 0;
-                const cursor = Math.floor(time * 2) % 2 ? '_' : '';
-                const visibleMessage = fullMessage.slice(0, typedLength) + (typedLength < fullMessage.length ? cursor : '');
-
-                ctx.fillStyle = '#d8ffd8';
-                ctx.font = isSmall ? '15px "Microsoft JhengHei", "Consolas", monospace' : '18px "Microsoft JhengHei", "Consolas", monospace';
-                wrapText(visibleMessage, chatX + 24, panelY + 76, chatWidth - 48, isSmall ? 24 : 28, 3);
-
-                const lineY = panelY + chatHeight - 18;
-                ctx.globalAlpha = reveal * (0.45 + Math.sin(time * 5) * 0.15);
-                ctx.strokeStyle = '#00ff00';
-                ctx.beginPath();
-                ctx.moveTo(chatX + 24, lineY);
-                ctx.lineTo(chatX + chatWidth - 24, lineY);
-                ctx.stroke();
-
-                ctx.restore();
-            }
         }
 
         function animate() {
@@ -695,6 +2229,8 @@
             }
 
             // 更新 Pacman 位置（只在 portfolio 頁面時移動）
+            syncChatOverlay();
+
             if (portfolioReached && assistantScrollOffset < canvas.height) {
                 pacmanX += pacmanSpeed;
                 // 如果 Pacman 移出右側，重置到左側
@@ -708,7 +2244,9 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // 如果已到達 portfolio，只顯示科幻風格 portfolio
-            if (portfolioReached) {
+            if (darkDoorPageReached) {
+                drawDarkDoorPage();
+            } else if (portfolioReached) {
                 if (assistantScrollOffset > 0) {
                     ctx.save();
                     ctx.translate(0, -assistantScrollOffset);
@@ -742,6 +2280,8 @@
                     ctx.restore();
                 }
             }
+
+            drawDoorTransitionOverlay();
 
             requestAnimationFrame(animate);
         }
